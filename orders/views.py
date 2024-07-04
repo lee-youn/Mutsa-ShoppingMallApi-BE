@@ -9,6 +9,7 @@ from items.models import Item, Order_item
 
 class OrdersViewSet(viewsets.ViewSet):
     def create(self, request):
+        print(request.data)
         serializer = OrderRequestDTO(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -40,7 +41,7 @@ class OrdersViewSet(viewsets.ViewSet):
             if item.stock_quantity < order_item_data['orderQuantity']:
                 raise ValidationError(f"상품 {item.item_name}의 재고가 부족합니다.")
 
-            item.sub_stock(order_item_data['orderQuantity'], save=False)
+            item.stock_quantity(order_item_data['orderQuantity'], save=False)
             items.append(item)
             order_items.append(Order_item(
                 order=order,
