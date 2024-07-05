@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from .models import Order
-from items.models import Item, Order_item  # Corrected import path
+from .models import Order, Order_item 
+from items.models import Item # Corrected import path
 from members.models import Member  # Corrected import path
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -10,22 +10,31 @@ class OrderItemSerializer(serializers.ModelSerializer):
     orderQuantity = serializers.IntegerField(source='count')
     orderStatus = serializers.CharField(source='order.status')
 
+    class Meta:
+        model = Order_item
+        fields = ['itemId', 'itemName', 'itemPrice', 'orderQuantity', 'orderStatus']
 
 
 class OrderSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
-    memberId = serializers.IntegerField(source='member.id')
-    items = OrderItemSerializer(source='orderitem_set', many=True)
-    orderedAt = serializers.DateTimeField(source='order_date')
+    items = OrderItemSerializer(source='order_item_set', many=True)
+
+    class Meta:
+        model = Order
+        fields = ['id', 'member','order_date','items','status']
 
 
 class OrderItemRequestDTO(serializers.Serializer):
     itemId = serializers.IntegerField()
     orderQuantity = serializers.IntegerField()
 
+
 class OrderRequestDTO(serializers.Serializer):
     memberId = serializers.IntegerField()
-    items = OrderItemRequestDTO(many=True)
+    items = serializers.ListField(
+        child=serializers.DictField()
+    )
+
 
 
     # def update(self, instance, validated_data):

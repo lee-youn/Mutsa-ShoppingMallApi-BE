@@ -2,14 +2,13 @@ from rest_framework.exceptions import ValidationError
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Order
+from .models import Order, Order_item
 from .serializers import OrderSerializer,OrderRequestDTO
 from members.models import Member
-from items.models import Item, Order_item
+from items.models import Item
 
 class OrdersViewSet(viewsets.ViewSet):
     def create(self, request):
-        print(request.data)
         serializer = OrderRequestDTO(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -37,23 +36,25 @@ class OrdersViewSet(viewsets.ViewSet):
             if 'orderQuantity' not in order_item_data:
                 raise ValidationError('주문 수량이 필요합니다.')
 
-            # Check if order quantity is available in stock
-            if item.stock_quantity < order_item_data['orderQuantity']:
-                raise ValidationError(f"상품 {item.item_name}의 재고가 부족합니다.")
+            # # Check if order quantity is available in stock
+            # if item.stock_quantity < order_item_data['orderQuantity']:
+            #     raise ValidationError(f"상품 {item.item_name}의 재고가 부족합니다.")
+            
+            # # Update stock quantity
+            # item.stock_quantity -= order_item_data['orderQuantity']
+            # item.save()  # 변경된 재고 수량 저장
 
-            item.stock_quantity(order_item_data['orderQuantity'], save=False)
-            items.append(item)
             order_items.append(Order_item(
                 order=order,
                 item=item,
                 count=order_item_data['orderQuantity']
             ))
-        
-        order.save()
+
+        order.save()  # 주문 저장
         for order_item in order_items:
-            order_item.save()
+            order_item.save()  # 주문 항목 저장
         for item in items:
-            item.save()
+            item.save()  # 상품 저장    order.save()
 
         serializer = OrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
