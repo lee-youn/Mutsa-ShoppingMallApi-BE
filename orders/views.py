@@ -3,7 +3,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Order, Order_item
-from .serializers import OrderSerializer,OrderRequestDTO
+from .serializers import OrderSerializer,OrderRequestDTO,MemberOrderItemSerializer
 from members.models import Member
 from items.models import Item
 
@@ -37,12 +37,12 @@ class OrdersViewSet(viewsets.ViewSet):
                 raise ValidationError('주문 수량이 필요합니다.')
 
             # # Check if order quantity is available in stock
-            # if item.stock_quantity < order_item_data['orderQuantity']:
-            #     raise ValidationError(f"상품 {item.item_name}의 재고가 부족합니다.")
+            if item.stock_quantity < order_item_data['orderQuantity']:
+                raise ValidationError(f"상품 {item.item_name}의 재고가 부족합니다.")
             
             # # Update stock quantity
-            # item.stock_quantity -= order_item_data['orderQuantity']
-            # item.save()  # 변경된 재고 수량 저장
+            item.stock_quantity -= order_item_data['orderQuantity']
+            item.save()  # 변경된 재고 수량 저장
 
             order_items.append(Order_item(
                 order=order,
@@ -60,9 +60,9 @@ class OrdersViewSet(viewsets.ViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     def list(self, request):
-        member_id = request.query_params.get('memberId')
+        member_id = request.query_params.get('member_id')
         queryset = Order.objects.filter(member_id=member_id)
-        serializer = OrderSerializer(queryset, many=True)
+        serializer = MemberOrderItemSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def retrieve(self, request, pk=None):

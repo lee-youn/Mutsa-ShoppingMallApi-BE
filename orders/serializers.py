@@ -15,6 +15,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields = ['itemId', 'itemName', 'itemPrice', 'orderQuantity', 'orderStatus']
 
 
+
 class OrderSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
     items = OrderItemSerializer(source='order_item_set', many=True)
@@ -35,6 +36,13 @@ class OrderRequestDTO(serializers.Serializer):
         child=serializers.DictField()
     )
 
+class MemberOrderItemSerializer(serializers.ModelSerializer):
+    memberId = serializers.IntegerField(source='member.id')
+    items = OrderItemSerializer(source='order_item_set', many=True)
+
+    class Meta:
+        model = Order_item
+        fields = ['memberId', 'items']
 
 
     # def update(self, instance, validated_data):
