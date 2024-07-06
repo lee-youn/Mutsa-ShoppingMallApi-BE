@@ -41,7 +41,7 @@ class MembersViewSet(viewsets.ViewSet):
         serializer = MemberSerializer(member)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-    def update(self, request, pk=None):
+    def partial_update(self, request, pk=None):
         try:
             member = Member.objects.get(pk=pk)
         except Member.DoesNotExist:

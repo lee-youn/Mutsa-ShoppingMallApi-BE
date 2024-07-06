@@ -30,7 +30,7 @@ class ItemsViewSet(viewsets.ViewSet):
         serializer = ItemsSerializer(item)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-    def update(self, request, pk=None):
+    def partial_update(self, request, pk=None):
         try:
             item = Item.objects.get(pk=pk)
         except item.DoesNotExist:
