@@ -3,7 +3,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Order, Order_item
-from .serializers import OrderSerializer,OrderRequestDTO,MemberOrderItemSerializer
+from .serializers import OrderSerializer,OrderRequestDTO,MemberOrderItemSerializer,CancelOrderItemSerializer
 from members.models import Member
 from items.models import Item
 
@@ -61,9 +61,18 @@ class OrdersViewSet(viewsets.ViewSet):
     
     def list(self, request):
         member_id = request.query_params.get('member_id')
-        queryset = Order.objects.filter(member_id=member_id)
-        serializer = MemberOrderItemSerializer(queryset, many=True)
+
+        if not member_id:
+            return Response({'detail': 'Member ID must be provided in query parameters.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            queryset = Order.objects.filter(member = member_id)
+        except ValueError:
+            return Response({'detail': 'Invalid member ID format.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = OrderSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
     
     def retrieve(self, request, pk=None):
         try:
@@ -74,6 +83,21 @@ class OrdersViewSet(viewsets.ViewSet):
         serializer = OrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
+    def update(self, request, pk=None):
+        try:
+            order = Order.objects.get(pk=pk)
+        except Order.DoesNotExist:
+            return Response({'detail': '해당 주문을 찾을 수 없습니다.'}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = OrderSerializer(order, data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        order = serializer.save()
+        order_serializer = OrderSerializer(order)
+        return Response(order_serializer.data, status=status.HTTP_200_OK)
+    
+    
     def destroy(self, request, pk=None):
         try:
             order = Order.objects.get(pk=pk)
@@ -81,46 +105,24 @@ class OrdersViewSet(viewsets.ViewSet):
             return Response({'detail': '해당 주문을 찾을 수 없습니다.'}, status=status.HTTP_404_NOT_FOUND)
         
         order.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-# from rest_framework import viewsets
-# from rest_framework.response import Response
-# from rest_framework import status
-# from .models import Order
-# from .serializers import OrderSerializer
-
-# class OrdersViewSet(viewsets.ViewSet):
-#     def create(self, request):
-#         serializer = OrderSerializer(data=request.data)
-
-#         if not serializer.is_valid():
-#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-#         order = serializer.save()
-#         order_serializer = OrderSerializer(order)
-#         return Response(order_serializer.data, status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_200_OK)
     
-#     def list(self, request):
-#         member_id = request.query_params.get('memberId')
-#         queryset = Order.objects.filter(member_id=member_id)
-#         serializer = OrderSerializer(queryset, many=True)
-#         return Response(serializer.data, status=status.HTTP_200_OK)
-    
-#     def retrieve(self, request, pk=None):
-#         try:
-#             order = Order.objects.get(pk=pk)
-#         except Order.DoesNotExist:
-#             return Response({'detail': '해당 주문을 찾을 수 없습니다.'}, status=status.HTTP_404_NOT_FOUND)
+
+    #코드 수정중
+    def cancel(self, request, pk=None):
+        try:
+            order = Order.objects.get(pk=pk)
+        except Order.DoesNotExist:
+            return Response({'detail': '해당 주문을 찾을 수 없습니다.'}, status=status.HTTP_404_NOT_FOUND)
         
-#         serializer = OrderSerializer(order)
-#         return Response(serializer.data, status=status.HTTP_200_OK)
-    
-#     def destroy(self, request, pk=None):
-#         try:
-#             order = Order.objects.get(pk=pk)
-#         except Order.DoesNotExist:
-#             return Response({'detail': '해당 주문을 찾을 수 없습니다.'}, status=status.HTTP_404_NOT_FOUND)
-        
-#         order.delete()
-#         return Response(status=status.HTTP_204_NO_CONTENT)
+        serializer = CancelOrderItemSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        data = serializer.validated_data
+
+        order.status = data['status']
+        order.save()
+
+        serializer = OrderSerializer(order)
+        return Response(serializer.data, status=status.HTTP_200_OK)
