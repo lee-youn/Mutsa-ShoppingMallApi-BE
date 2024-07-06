@@ -37,7 +37,7 @@ class OrderRequestDTO(serializers.Serializer):
     )
 
 class MemberOrderItemSerializer(serializers.ModelSerializer):
-    memberId = serializers.IntegerField(source='member.id')
+    member_id = serializers.IntegerField()
     orders = OrderSerializer(source='order_item_set', many=True, read_only=True)
 
     class Meta:
