@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-_k(jb9q1l!4ah-mgo!63lz9=dcfh_of7n#49y^%=vyymk_io0$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['43.201.228.85', '127.0.0.1',]
+ALLOWED_HOSTS = ['43.201.228.85', '127.0.0.1','localhost']
 
 
 # Application definition
@@ -38,14 +38,16 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
+    'corsheaders',
+    "rest_framework",
+
     "items",
     "members",
     "orders",
-    "rest_framework",
-    'corsheaders'
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -53,7 +55,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'corsheaders.middleware.CorsMiddleware'
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -133,5 +134,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
-    'http://43.201.228.85'
+    'http://43.201.228.85',
+    'http://182.218.243.50',
+    'http://172.30.1.66'
 ]
