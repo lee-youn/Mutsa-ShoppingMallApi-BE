@@ -5,7 +5,7 @@ from items.models import Item
 class OrderStatus(models.TextChoices):
     IN_PROGRESS = 'IPRG', 'In progress'
     DONE = 'DONE', 'Done'
-    CANCEL = 'CANCLE', 'Cancle'
+    CANCEL = 'CANCEL', 'Cancel'
 
 class Order(models.Model):
     order_date = models.DateTimeField(auto_now_add=True)
